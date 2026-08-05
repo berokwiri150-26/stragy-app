@@ -5,17 +5,35 @@ from app.models.trip import Trip
 from server.extensions import db
 
 
+def _parse_float(value):
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _parse_int(value):
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def create_trip(data):
     trip = Trip(
-        vehicle_id=data.get("vehicle_id"),
+        vehicle_id=_parse_int(data.get("vehicle_id")),
         start_time=data.get("start_time"),
         end_time=data.get("end_time"),
         start_location=data.get("start_location"),
         end_location=data.get("end_location"),
-        distance=data.get("distance"),
-        avg_speed=data.get("avg_speed"),
-        top_speed=data.get("top_speed"),
-        fuel_used=data.get("fuel_used"),
+        distance=_parse_float(data.get("distance")),
+        avg_speed=_parse_float(data.get("avg_speed")),
+        top_speed=_parse_float(data.get("top_speed")),
+        fuel_used=_parse_float(data.get("fuel_used")),
         route_type=data.get("route_type"),
         created_at=data.get("created_at") or datetime.utcnow(),
     )
