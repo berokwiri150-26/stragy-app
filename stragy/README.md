@@ -131,7 +131,8 @@ Keep your app organized by making sure each folder has a single responsibility. 
 
 - The frontend uses `fetch()` against `/api/*` endpoints in `stragy/client/stragyfront/src/App.jsx`.
 - During development, `stragy/client/stragyfront/vite.config.js` proxies `/api` requests to `http://127.0.0.1:5000`.
-- The backend routes in `stragy/server/app.py` now support both bare and `/api/*` paths, including `/api/auth/login`, `/api/users/vehicles`, and `/api/routes`.
+- The backend routes in `stragy/server/app.py` now support both bare and `/api/*` paths, including `/api/auth/login`, `/api/users/vehicles`, `/api/routes`, and `/api/vehicle-search`.
+- `/api/vehicle-search` will fetch from an external vehicle catalog when `VEHICLE_CATALOG_API_URL` is set, otherwise it falls back to searching local vehicles.
 - This setup keeps the frontend and backend aligned and avoids cross-origin issues when running Vite locally.
 
 
