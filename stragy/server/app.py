@@ -12,6 +12,7 @@ from server.extensions import db
 import app.models
 from app.controllers.user_controller import create_user, list_users
 from app.controllers.vehicle_controller import create_vehicle, list_vehicles
+from app.controllers.vehicle_catalog_controller import search_vehicle_catalog
 from app.controllers.trip_controller import (
     add_trip_note,
     create_trip,
@@ -62,6 +63,19 @@ def register_routes(app):
     @app.get("/api/users/vehicles")
     def users_vehicles():
         return jsonify([vehicle.to_dict() for vehicle in list_vehicles()])
+
+    @app.get("/api/vehicle-search")
+    def vehicle_search():
+        query = request.args.get("query", "")
+        results = search_vehicle_catalog(query)
+
+        serialized = []
+        for item in results:
+            if hasattr(item, "to_dict"):
+                serialized.append(item.to_dict())
+            else:
+                serialized.append(item)
+        return jsonify(serialized)
 
     @app.post("/api/auth/login")
     def login():
