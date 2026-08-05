@@ -1,5 +1,10 @@
 import './App.css'
 import { useState, useEffect } from 'react'
+import AuthPortal from './components/AuthPortal'
+import SearchBar from './components/SearchBar'
+import VehicleList from './components/VehicleList'
+import RouteForm from './components/RouteForm'
+import UnsentQueue from './components/UnsentQueue'
 
 function App() {
   const [vehicles, setVehicles] = useState([])
@@ -39,7 +44,11 @@ function App() {
 
   async function login(username, password) {
     try {
-      const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) })
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      })
       if (!res.ok) throw new Error('auth failed')
       const data = await res.json()
       setToken(data.token)
@@ -48,7 +57,6 @@ function App() {
       localStorage.setItem('stragy_user', JSON.stringify(data.user || { username }))
       return true
     } catch (err) {
-      // fallback to local-only login
       setUser({ username })
       localStorage.setItem('stragy_user', JSON.stringify({ username }))
       return false
@@ -66,7 +74,13 @@ function App() {
     setQuery(e.target.value)
   }
 
-  const filtered = vehicles.filter(v => v.make?.toLowerCase().includes(query.toLowerCase()) || v.model?.toLowerCase().includes(query.toLowerCase()) )
+  function onSelectVehicle(vehicleId) {
+    setSelectedVehicleId(String(vehicleId))
+  }
+
+  function onRouteFieldChange(key, value) {
+    setRouteForm(prev => ({ ...prev, [key]: value }))
+  }
 
   function handlePhotoChange(e) {
     const file = e.target.files?.[0] || null
@@ -74,11 +88,17 @@ function App() {
     setPhotoPreview(file ? URL.createObjectURL(file) : null)
   }
 
+  function handleClearRoute() {
+    setRouteForm({ title: '', distance_km: '', avg_speed_kmh: '', notes: '' })
+    setPhoto(null)
+    setPhotoPreview(null)
+  }
+
   function readFileAsDataURL(file) {
-    return new Promise((res, rej) => {
+    return new Promise((resolve, reject) => {
       const fr = new FileReader()
-      fr.onload = () => res(fr.result)
-      fr.onerror = rej
+      fr.onload = () => resolve(fr.result)
+      fr.onerror = reject
       fr.readAsDataURL(file)
     })
   }
@@ -99,6 +119,7 @@ function App() {
       alert('Choose a vehicle first')
       return
     }
+
     const payload = { vehicle_id: selectedVehicleId, ...routeForm }
     try {
       const formData = new FormData()
@@ -109,12 +130,9 @@ function App() {
       const res = await fetchWithAuth('/api/routes', { method: 'POST', body: formData })
       if (!res.ok) throw new Error('submit failed')
       alert('Route posted')
-      setRouteForm({ title: '', distance_km: '', avg_speed_kmh: '', notes: '' })
-      setPhoto(null)
-      setPhotoPreview(null)
+      handleClearRoute()
     } catch (err) {
       console.error('post failed, saving locally', err)
-      // save to local unsent queue (serialize photo as data URL if present)
       if (photo) {
         try {
           const dataUrl = await readFileAsDataURL(photo)
@@ -137,7 +155,9 @@ function App() {
       try {
         const fd = new FormData()
         fd.append('vehicle_id', item.payload.vehicle_id)
-        Object.entries(item.payload).forEach(([k, v]) => { if (k !== 'vehicle_id') fd.append(k, String(v)) })
+        Object.entries(item.payload).forEach(([k, v]) => {
+          if (k !== 'vehicle_id') fd.append(k, String(v))
+        })
         if (item.photoDataUrl) fd.append('photo', dataURLToBlob(item.photoDataUrl), 'photo.jpg')
         const res = await fetchWithAuth('/api/routes', { method: 'POST', body: fd })
         if (!res.ok) throw new Error('server refused')
@@ -148,7 +168,7 @@ function App() {
     }
     setUnsent(remaining)
     if (remaining.length === 0) alert('All unsent routes synced')
-    else alert(`${remaining.length} routes remain unsent`) 
+    else alert(`${remaining.length} routes remain unsent`)
   }
 
   return (
@@ -161,85 +181,35 @@ function App() {
             A space for car enthusiasts to log vehicles, post routes, and share notes.
           </p>
         </div>
-        <div className="auth-portal">
-          {user ? (
-            <div className="user-box">
-              <span className="username">{user.username}</span>
-              <button onClick={logout}>Logout</button>
-            </div>
-          ) : (
-            <LoginForm onLogin={login} />
-          )}
-        </div>
+        <AuthPortal user={user} onLogin={login} onLogout={logout} />
       </header>
 
-      <section className="search-row">
-        <input placeholder="Search vehicles (make or model)" value={query} onChange={onSearchChange} />
-        <button onClick={fetchVehicles}>Refresh</button>
-      </section>
+      <SearchBar query={query} onQueryChange={onSearchChange} onRefresh={fetchVehicles} />
 
-      <section className="vehicles-list">
-        <h2>Your Vehicles</h2>
-        <div className="vehicle-items">
-          {filtered.length === 0 && (
-            <p className="muted">
-              {query.trim()
-                ? `No vehicles match "${query}". Try a different term or add a vehicle.`
-                : 'No vehicles found. Add a vehicle, or search for a different kind.'}
-            </p>
-          )}
-          {filtered.map(v => (
-            <div key={v.id} className={`vehicle-item ${selectedVehicleId === String(v.id) ? 'selected' : ''}`} onClick={() => setSelectedVehicleId(String(v.id))}>
-              <div className="vehicle-main">
-                <strong>{v.make} {v.model}</strong>
-                <small>{v.year}</small>
-              </div>
-              <div className="vehicle-meta">{v.license_plate}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <VehicleList
+        vehicles={vehicles}
+        selectedVehicleId={selectedVehicleId}
+        query={query}
+        onSelectVehicle={onSelectVehicle}
+      />
 
       <section className="form-row">
-        <form className="route-form" onSubmit={submitRoute}>
-          <h3>Log a Route</h3>
-          <label>Title
-            <input value={routeForm.title} onChange={e => setRouteForm({ ...routeForm, title: e.target.value })} required />
-          </label>
-
-          <label>Distance (km)
-            <input type="number" step="0.1" value={routeForm.distance_km} onChange={e => setRouteForm({ ...routeForm, distance_km: e.target.value })} />
-          </label>
-
-          <label>Average speed (km/h)
-            <input type="number" step="0.1" value={routeForm.avg_speed_kmh} onChange={e => setRouteForm({ ...routeForm, avg_speed_kmh: e.target.value })} />
-          </label>
-
-          <label>Notes
-            <textarea value={routeForm.notes} onChange={e => setRouteForm({ ...routeForm, notes: e.target.value })} />
-          </label>
-
-          <label>Photo
-            <input type="file" accept="image/*" onChange={handlePhotoChange} />
-          </label>
-
-          {photoPreview && <div className="photo-preview"><img src={photoPreview} alt="preview"/></div>}
-
-          <div className="form-actions">
-            <button type="submit" className="primary">Post Route</button>
-            <button type="button" onClick={() => { setRouteForm({ title: '', distance_km: '', avg_speed_kmh: '', notes: '' }); setPhoto(null); setPhotoPreview(null) }}>Clear</button>
-          </div>
-        </form>
-        <div style={{marginTop:12}}>
-          <button onClick={retryUnsent} disabled={!unsent || unsent.length===0}>Retry unsent ({unsent?.length||0})</button>
-        </div>
+        <RouteForm
+          routeForm={routeForm}
+          onFieldChange={onRouteFieldChange}
+          onPhotoChange={handlePhotoChange}
+          photoPreview={photoPreview}
+          onSubmit={submitRoute}
+          onClear={handleClearRoute}
+        />
+        <UnsentQueue unsentCount={unsent?.length || 0} onRetry={retryUnsent} />
       </section>
 
       <section className="callout">
         <h2>Ready for your next drive?</h2>
         <p>
           Search your trip and trip details you need, or alternatively,
-          Log your routes and share your experiences with the StrAgy community.
+          log your routes and share your experiences with the StrAgy community.
         </p>
       </section>
     </div>
@@ -247,25 +217,3 @@ function App() {
 }
 
 export default App
-
-function LoginForm({ onLogin }) {
-  const [user, setUser] = useState('')
-  const [pass, setPass] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  async function submit(e) {
-    e.preventDefault()
-    setBusy(true)
-    try {
-      await onLogin(user, pass)
-    } finally { setBusy(false) }
-  }
-
-  return (
-    <form className="login-form" onSubmit={submit}>
-      <input placeholder="username" value={user} onChange={e=>setUser(e.target.value)} />
-      <input placeholder="password" type="password" value={pass} onChange={e=>setPass(e.target.value)} />
-      <button type="submit" disabled={busy}>Sign in</button>
-    </form>
-  )
-}
