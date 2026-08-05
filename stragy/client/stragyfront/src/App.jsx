@@ -2,6 +2,7 @@ import './App.css'
 import { useState, useEffect } from 'react'
 import AuthPortal from './components/AuthPortal'
 import SearchBar from './components/SearchBar'
+import VehicleForm from './components/VehicleForm'
 import VehicleList from './components/VehicleList'
 import RouteForm from './components/RouteForm'
 import UnsentQueue from './components/UnsentQueue'
@@ -12,6 +13,15 @@ function App() {
   const [token, setToken] = useState(() => localStorage.getItem('stragy_token') || '')
   const [query, setQuery] = useState('')
   const [selectedVehicleId, setSelectedVehicleId] = useState('')
+  const [vehicleForm, setVehicleForm] = useState({
+    make: '',
+    model: '',
+    year: '',
+    engine_size: '',
+    fuel_type: '',
+    tyre_size: '',
+    load_capacity: '',
+  })
   const [routeForm, setRouteForm] = useState({ title: '', distance_km: '', avg_speed_kmh: '', notes: '' })
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
@@ -25,6 +35,18 @@ function App() {
     fetchVehicles()
   }, [])
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (query.trim()) {
+        searchVehicles(query)
+      } else {
+        fetchVehicles()
+      }
+    }, 250)
+
+    return () => clearTimeout(timer)
+  }, [query])
+
   async function fetchVehicles() {
     try {
       const res = await fetchWithAuth('/api/users/vehicles')
@@ -34,6 +56,37 @@ function App() {
     } catch (e) {
       console.warn('could not fetch vehicles', e)
     }
+  }
+
+  async function searchVehicles(searchTerm) {
+    try {
+      const res = await fetchWithAuth(`/api/vehicle-search?query=${encodeURIComponent(searchTerm)}`)
+      if (!res.ok) throw new Error('search failed')
+      const data = await res.json()
+      setVehicles(data || [])
+    } catch (e) {
+      console.warn('could not search vehicles', e)
+    }
+  }
+
+  async function createVehicle(payload) {
+    if (!user?.id) {
+      throw new Error('You must be logged in to add a vehicle')
+    }
+
+    const res = await fetchWithAuth('/api/vehicles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...payload, user_id: user.id }),
+    })
+
+    if (!res.ok) {
+      throw new Error('vehicle creation failed')
+    }
+
+    const vehicle = await res.json()
+    setVehicles(prev => [vehicle, ...prev])
+    return vehicle
   }
 
   function fetchWithAuth(url, opts = {}) {
@@ -78,6 +131,10 @@ function App() {
     setSelectedVehicleId(String(vehicleId))
   }
 
+  function onVehicleFieldChange(key, value) {
+    setVehicleForm(prev => ({ ...prev, [key]: value }))
+  }
+
   function onRouteFieldChange(key, value) {
     setRouteForm(prev => ({ ...prev, [key]: value }))
   }
@@ -92,6 +149,18 @@ function App() {
     setRouteForm({ title: '', distance_km: '', avg_speed_kmh: '', notes: '' })
     setPhoto(null)
     setPhotoPreview(null)
+  }
+
+  function handleClearVehicle() {
+    setVehicleForm({
+      make: '',
+      model: '',
+      year: '',
+      engine_size: '',
+      fuel_type: '',
+      tyre_size: '',
+      load_capacity: '',
+    })
   }
 
   function readFileAsDataURL(file) {
@@ -171,6 +240,19 @@ function App() {
     else alert(`${remaining.length} routes remain unsent`)
   }
 
+  async function submitVehicle(e) {
+    e.preventDefault()
+    try {
+      const vehicle = await createVehicle(vehicleForm)
+      setSelectedVehicleId(vehicle.id)
+      handleClearVehicle()
+      alert('Vehicle added successfully')
+    } catch (err) {
+      console.error('could not add vehicle', err)
+      alert('Could not add vehicle. Please try again.')
+    }
+  }
+
   return (
     <div className="app-shell">
       <header className="hero-panel">
@@ -185,6 +267,13 @@ function App() {
       </header>
 
       <SearchBar query={query} onQueryChange={onSearchChange} onRefresh={fetchVehicles} />
+
+      <VehicleForm
+        vehicleForm={vehicleForm}
+        onFieldChange={onVehicleFieldChange}
+        onSubmit={submitVehicle}
+        onClear={handleClearVehicle}
+      />
 
       <VehicleList
         vehicles={vehicles}
