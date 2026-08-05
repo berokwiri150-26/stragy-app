@@ -126,3 +126,10 @@ After the setup is complete, start building the app in this order:
 ## Next Step
 
 Keep your app organized by making sure each folder has a single responsibility. This will make the project easier to grow later.
+
+## Some maoni for any kind of future deployment.
+
+- The frontend uses `fetch()` against `/api/*` endpoints in `stragy/client/stragyfront/src/App.jsx`.
+- During development, `stragy/client/stragyfront/vite.config.js` proxies `/api` requests to `http://127.0.0.1:5000`.
+- The backend routes in `stragy/server/app.py` now support both bare and `/api/*` paths, including `/api/auth/login`, `/api/users/vehicles`, and `/api/routes`.
+- This setup keeps the frontend and backend aligned and avoids cross-origin issues when running Vite locally.
