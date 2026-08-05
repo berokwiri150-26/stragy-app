@@ -8,6 +8,11 @@ import RouteForm from './components/RouteForm'
 import UnsentQueue from './components/UnsentQueue'
 
 function App() {
+  // In production set VITE_API_BASE to your backend URL (example: https://api.example.com)
+  // Leave empty for local dev where Vite proxies /api to backend.
+  const API_BASE = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE
+    ? import.meta.env.VITE_API_BASE
+    : ''
   const [vehicles, setVehicles] = useState([])
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('stragy_user') || 'null'))
   const [token, setToken] = useState(() => localStorage.getItem('stragy_token') || '')
@@ -92,7 +97,11 @@ function App() {
   function fetchWithAuth(url, opts = {}) {
     const headers = opts.headers ? { ...opts.headers } : {}
     if (token) headers['Authorization'] = `Bearer ${token}`
-    return fetch(url, { ...opts, headers })
+    // Prefix URL with API_BASE when present (production). Keeps relative paths for dev.
+    const fullUrl = url.startsWith('http') || url.startsWith(API_BASE)
+      ? url
+      : `${API_BASE}${url}`
+    return fetch(fullUrl, { ...opts, headers })
   }
 
   async function login(username, password) {
