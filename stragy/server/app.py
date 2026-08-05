@@ -1,14 +1,28 @@
+import os
+import sys
+
 from flask import Flask, jsonify, request
 from flask_migrate import Migrate
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from server.config import Config
 from server.extensions import db
 
-# Temporary in-memory storage for MVP demo purposes.
-# These will later be replaced by real database models.
-vehicle_store = []
-route_store = []
-note_store = []
+import app.models
+from app.controllers.user_controller import create_user, list_users
+from app.controllers.vehicle_controller import create_vehicle, list_vehicles
+from app.controllers.trip_controller import (
+    add_trip_note,
+    create_trip,
+    get_trip_notes,
+    list_trips,
+)
+from app.controllers.personal_record_controller import (
+    create_personal_record,
+    list_personal_records,
+)
+from app.models.user import User
 
 
 def create_app(config_object=Config):
@@ -29,81 +43,91 @@ def register_extensions(app):
 
 def register_routes(app):
     @app.get("/health")
+    @app.get("/api/health")
     def health():
         return jsonify({"status": "ok", "app": "StrAgy API"})
 
+    @app.get("/users")
+    @app.get("/api/users")
+    def users():
+        return jsonify([user.to_dict() for user in list_users()])
+
+    @app.post("/users")
+    @app.post("/api/users")
+    def new_user():
+        payload = request.get_json(silent=True) or {}
+        user = create_user(payload)
+        return jsonify(user.to_dict()), 201
+# This section here connects the backend to front end, so that the app is somewhat ready to deploy. SOme routes just for better alignment.
+    @app.get("/api/users/vehicles")
+    def users_vehicles():
+        return jsonify([vehicle.to_dict() for vehicle in list_vehicles()])
+
+    @app.post("/api/auth/login")
+    def login():
+        payload = request.get_json(silent=True) or {}
+        username = payload.get("username")
+        password = payload.get("password")
+
+        if not username or not password:
+            return jsonify({"error": "username and password are required"}), 400
+
+        user = User.query.filter_by(username=username).first()
+        if user:
+            if user.password_hash != password:
+                return jsonify({"error": "invalid credentials"}), 401
+        else:
+            user = create_user({"username": username, "password": password})
+
+        return jsonify({"user": user.to_dict(), "token": f"token-{user.id}-{user.username}"})
+
     @app.get("/vehicles")
-    def get_vehicles():
-        return jsonify(vehicle_store)
+    @app.get("/api/vehicles")
+    def vehicles():
+        return jsonify([vehicle.to_dict() for vehicle in list_vehicles()])
 
     @app.post("/vehicles")
-    def create_vehicle():
+    @app.post("/api/vehicles")
+    def new_vehicle():
         payload = request.get_json(silent=True) or {}
-        vehicle_id = len(vehicle_store) + 1
-        vehicle = {
-            "id": vehicle_id,
-            "user_id": payload.get("user_id"),
-            "make": payload.get("make"),
-            "model": payload.get("model"),
-            "year": payload.get("year"),
-            "engine_size": payload.get("engine_size"),
-            "fuel_type": payload.get("fuel_type"),
-            "tyre_size": payload.get("tyre_size"),
-            "load_capacity": payload.get("load_capacity"),
-            "created_at": payload.get("created_at"),
-        }
-        vehicle_store.append(vehicle)
-        return jsonify(vehicle), 201
+        vehicle = create_vehicle(payload)
+        return jsonify(vehicle.to_dict()), 201
 
     @app.get("/routes")
-    def get_routes():
-        return jsonify(route_store)
+    @app.get("/api/routes")
+    def routes():
+        return jsonify([trip.to_dict() for trip in list_trips()])
 
     @app.post("/routes")
-    def create_route():
-        payload = request.get_json(silent=True) or {}
-        route_id = len(route_store) + 1
-        route = {
-            "id": route_id,
-            "user_id": payload.get("user_id"),
-            "vehicle_id": payload.get("vehicle_id"),
-            "start_location": payload.get("start_location"),
-            "end_location": payload.get("end_location"),
-            "distance": payload.get("distance"),
-            "avg_speed": payload.get("avg_speed"),
-            "top_speed": payload.get("top_speed"),
-            "route_type": payload.get("route_type"),
-            "notes": [],
-            "created_at": payload.get("created_at"),
-        }
-        route_store.append(route)
-        return jsonify(route), 201
+    @app.post("/api/routes")
+    def new_route():
+        if request.is_json:
+            payload = request.get_json(silent=True) or {}
+        else:
+            payload = {**request.form.to_dict()}
+            if request.files.get("photo"):
+                payload["photo"] = request.files["photo"]
+
+        trip = create_trip(payload)
+        return jsonify(trip.to_dict()), 201
 
     @app.get("/routes/<int:route_id>/notes")
-    def get_route_notes(route_id):
-        route = next((r for r in route_store if r["id"] == route_id), None)
-        if not route:
-            return jsonify({"error": "Route not found"}), 404
-        return jsonify(route.get("notes", []))
+    @app.get("/api/routes/<int:route_id>/notes")
+    def route_notes(route_id):
+        notes = get_trip_notes(route_id)
+        return jsonify([note.to_dict() for note in notes])
 
     @app.post("/routes/<int:route_id>/notes")
-    def create_route_note(route_id):
-        route = next((r for r in route_store if r["id"] == route_id), None)
-        if not route:
-            return jsonify({"error": "Route not found"}), 404
-
+    @app.post("/api/routes/<int:route_id>/notes")
+    def add_note(route_id):
         payload = request.get_json(silent=True) or {}
-        note_id = len(note_store) + 1
-        note = {
-            "id": note_id,
-            "route_id": route_id,
-            "user_id": payload.get("user_id"),
-            "content": payload.get("content"),
-            "created_at": payload.get("created_at"),
-        }
-        route["notes"].append(note)
-        note_store.append(note)
-        return jsonify(note), 201
+        note = add_trip_note(route_id, payload)
+        return jsonify(note.to_dict()), 201
+
+    @app.get("/personal-records")
+    @app.get("/api/personal-records")
+    def records():
+        return jsonify([record.to_dict() for record in list_personal_records()])
 
     return app
 
