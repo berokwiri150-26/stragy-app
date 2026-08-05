@@ -133,3 +133,7 @@ Keep your app organized by making sure each folder has a single responsibility. 
 - During development, `stragy/client/stragyfront/vite.config.js` proxies `/api` requests to `http://127.0.0.1:5000`.
 - The backend routes in `stragy/server/app.py` now support both bare and `/api/*` paths, including `/api/auth/login`, `/api/users/vehicles`, and `/api/routes`.
 - This setup keeps the frontend and backend aligned and avoids cross-origin issues when running Vite locally.
+
+
+N/B: You must be in the stragyfront directory in order to run the front end using vite. 
+For example: Documents/stragy-app/stragy/stragyfront. - It's a bit complicated due to the way I set up my repos, but it works. 
