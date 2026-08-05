@@ -86,7 +86,19 @@ function App() {
     })
 
     if (!res.ok) {
-      throw new Error('vehicle creation failed')
+      // Try to parse server-provided error message for better feedback
+      let errMsg = `vehicle creation failed (${res.status})`
+      try {
+        const body = await res.json()
+        if (body) {
+          if (body.error) errMsg = body.error
+          else if (body.message) errMsg = body.message
+          else if (typeof body === 'string') errMsg = body
+        }
+      } catch (e) {
+        // ignore JSON parse errors
+      }
+      throw new Error(errMsg)
     }
 
     const vehicle = await res.json()
@@ -258,7 +270,12 @@ function App() {
       alert('Vehicle added successfully')
     } catch (err) {
       console.error('could not add vehicle', err)
-      alert('Could not add vehicle. Please try again.')
+      const msg = err?.message || ''
+      if (msg.toLowerCase().includes('logged in') || msg.toLowerCase().includes('login')) {
+        alert('Please sign in to add a vehicle.')
+      } else {
+        alert(`Could not add vehicle: ${msg}`)
+      }
     }
   }
 
