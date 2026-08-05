@@ -118,7 +118,7 @@ function App() {
 
   async function login(username, password) {
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetchWithAuth('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -131,8 +131,12 @@ function App() {
       localStorage.setItem('stragy_user', JSON.stringify(data.user || { username }))
       return true
     } catch (err) {
-      setUser({ username })
-      localStorage.setItem('stragy_user', JSON.stringify({ username }))
+      console.error('login failed', err)
+      // Don't persist a partial user object when auth fails.
+      setUser(null)
+      setToken('')
+      localStorage.removeItem('stragy_user')
+      localStorage.removeItem('stragy_token')
       return false
     }
   }
