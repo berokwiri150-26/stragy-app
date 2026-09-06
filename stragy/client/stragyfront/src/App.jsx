@@ -132,7 +132,7 @@ function App() {
       return true
     } catch (err) {
       console.error('login failed', err)
-      // Don't persist a partial user object when auth fails.
+      
       setUser(null)
       setToken('')
       localStorage.removeItem('stragy_user')
