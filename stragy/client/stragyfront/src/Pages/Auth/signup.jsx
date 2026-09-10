@@ -1,6 +1,6 @@
 import {useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
-import {useAuth} from '../../context/auth';
+import { Link, useNavigate} from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import Button from '../../components/Button';
 
 function Signup() {
@@ -11,21 +11,21 @@ function Signup() {
         confirmPassword: '',
 });
 
-const [error,s setError] = useState('');
+const [error, setError] = useState('');
 const [submitting, setSubmitting] = useState(false);
 
 const { signup } = useAuth();
-const navigate = useNavigate(;
+const navigate = useNavigate();
 
-const handleCHange = (event) => {
+const handleChange = (event) => {
     const { name, value} = event.target;
 
-    if (error) setError (null);
+    if (error) setError(null);
     
     setForm(previous) => ({
-        ...previous,
-        [name]: value, 
-}));
+       ...previous,
+    [name] : value, 
+    });
 };
 
 const submit = async (event) => {
@@ -69,3 +69,118 @@ const submit = async (event) => {
         setSubmitting(false);
     }
 };
+
+ return (
+    <section 
+      className="auth-shell"
+      style={{
+        marginLeft: '180px', // Reduced offset to pull content leftward
+        marginRight: '80px',  // Slight right margin push
+        width: 'calc(100% - 260px)',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        boxSizing: 'border-box',
+        padding: '2rem',
+      }}
+    >
+      {/* Visual / Brand Panel */}
+      <aside className="auth-poster" style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <p className="eyebrow">WELCOME TO STRAGY</p>
+        <h1>CREATE AN ACCOUNT.</h1>
+        <p>Connect with car enthusiasts, build a rapport and track what your friends are driving.</p>
+      </aside>
+
+      {/* Form Section */}
+      <form 
+        className="auth-form" 
+        onSubmit={submit} 
+        noValidate
+        style={{ width: '100%', maxWidth: '420px' }}
+      >
+        <p className="eyebrow">New Account</p>
+        <h2>Sign up.</h2>
+
+        {error && (
+          <p className="error-message" role="alert" id="signup-error">
+            {error}
+          </p>
+        )}
+
+        <div className="form-stack">
+          <label>
+            <span className="field-label">Username</span>
+            <input
+              name="username"
+              type="text"
+              autoComplete="username"
+              placeholder="Username"
+              value={form.username}
+              onChange={handleChange}
+              aria-describedby={error ? "signup-error" : undefined}
+              required
+              minLength={3}
+            />
+          </label>
+
+          <label>
+            <span className="field-label">Email</span>
+            <input
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@gmail.com"
+              value={form.email}
+              onChange={handleChange}
+              aria-describedby={error ? "signup-error" : undefined}
+              required
+            />
+          </label>
+
+          <label>
+            <span className="field-label">Password</span>
+            <input
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+              value={form.password}
+              onChange={handleChange}
+              aria-describedby={error ? "signup-error" : undefined}
+              required
+              minLength={8}
+            />
+          </label>
+
+          <label>
+            <span className="field-label">Confirm Password</span>
+            <input
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Enter your password again"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              aria-describedby={error ? "signup-error" : undefined}
+              required
+              minLength={8}
+            />
+          </label>
+
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Creating account…' : 'Sign up'}
+            <span aria-hidden="true">→</span>
+          </Button>
+        </div>
+
+        <p>
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
+      </form>
+    </section>
+  );
+}
+
+export default Signup;
