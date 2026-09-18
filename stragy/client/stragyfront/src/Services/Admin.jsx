@@ -9,11 +9,11 @@ export const getAdminStats = async () => {
     // Fallback simulated metrics if dedicated admin API endpoint is not available
     return {
       totalUsers: 142,
-      totalClubs: 18,
+      totalClans: 18,
       totalPosts: 389,
       flaggedContent: 4,
       systemStatus: 'Healthy',
-      activeSessions: 27,
+      activeSMembers: 27,
     };
   }
 };
@@ -47,23 +47,23 @@ export const toggleUserBanStatus = async (userId, isBanned) => {
   }
 };
 
-// Club Management Actions
-export const getAdminClubs = async (params = {}) => {
+// Clan Management Actions
+export const getAdminClans = async (params = {}) => {
   try {
-    const res = await api.get('/api/admin/clubs', { params });
+    const res = await api.get('/api/admin/clans', { params });
     return res.data;
   } catch {
-    const res = await api.get('/api/clubs', { params });
+    const res = await api.get('/api/clans', { params });
     return res.data;
   }
 };
 
-export const deleteClubAdmin = async (clubId) => {
+export const deleteClanAdmin = async (clanId) => {
   try {
-    const res = await api.delete(`/api/admin/clubs/${clubId}`);
+    const res = await api.delete(`/api/admin/clans/${clanId}`);
     return res.data;
   } catch {
-    const res = await api.delete(`/api/clubs/${clubId}`);
+    const res = await api.delete(`/api/clan/${clanId}`);
     return res.data;
   }
 };
