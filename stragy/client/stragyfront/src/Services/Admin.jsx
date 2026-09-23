@@ -1,4 +1,4 @@
-import api from './api.js';
+import api from './api.jsx';
 
 // Get Admin System Overview Stats
 export const getAdminStats = async () => {
@@ -13,7 +13,7 @@ export const getAdminStats = async () => {
       totalPosts: 389,
       flaggedContent: 4,
       systemStatus: 'Healthy',
-      activeSMembers: 27,
+      activeMembers: 27,
     };
   }
 };
