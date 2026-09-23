@@ -6,8 +6,10 @@ import VehicleForm from './components/VehicleForm'
 import VehicleList from './components/VehicleList'
 import RouteForm from './components/RouteForm'
 import UnsentQueue from './components/UnsentQueue'
+import Discover from './Pages/Discover/Discover'
 
 function App() {
+  const LOGGED_TRIPS_KEY = 'stragy_logged_trips'
   // In production set VITE_API_BASE to your backend URL (example: https://api.example.com)
   // Leave empty for local dev where Vite proxies /api to backend.
   const API_BASE = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE
@@ -27,7 +29,22 @@ function App() {
     tyre_size: '',
     load_capacity: '',
   })
-  const [routeForm, setRouteForm] = useState({ title: '', distance_km: '', avg_speed_kmh: '', notes: '' })
+  const [routeForm, setRouteForm] = useState({
+    title: '',
+    location: '',
+    distance_km: '',
+    avg_speed_kmh: '',
+    duration: '',
+    tag: '',
+    notes: '',
+  })
+  const [loggedTrips, setLoggedTrips] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('stragy_logged_trips') || '[]')
+    } catch (err) {
+      return []
+    }
+  })
   const [photo, setPhoto] = useState(null)
   const [photoPreview, setPhotoPreview] = useState(null)
   const [unsent, setUnsent] = useState(() => JSON.parse(localStorage.getItem('unsent_routes') || '[]'))
@@ -37,8 +54,38 @@ function App() {
   }, [unsent])
 
   useEffect(() => {
+    localStorage.setItem('stragy_logged_trips', JSON.stringify(loggedTrips || []))
+  }, [loggedTrips])
+
+  useEffect(() => {
     fetchVehicles()
   }, [])
+
+  function persistLoggedTrip(routeEntry) {
+    const nextEntry = {
+      id: routeEntry.id ?? Date.now(),
+      title: routeEntry.title?.trim() || 'Untitled route',
+      location: routeEntry.location?.trim() || 'Unspecified location',
+      distance: routeEntry.distance_km ? `${Number(routeEntry.distance_km)} km` : '0 km',
+      duration: routeEntry.duration || (
+        routeEntry.distance_km && routeEntry.avg_speed_kmh
+          ? `${Math.max(1, Math.round((Number(routeEntry.distance_km) / Math.max(Number(routeEntry.avg_speed_kmh), 1)) * 60))} min`
+          : '0 min'
+      ),
+      tag: routeEntry.tag?.trim() || 'Logged',
+      notes: routeEntry.notes?.trim() || 'No notes added yet',
+      createdAt: new Date().toISOString(),
+    }
+
+    try {
+      const existing = JSON.parse(localStorage.getItem(LOGGED_TRIPS_KEY) || '[]')
+      const updated = [nextEntry, ...existing].slice(0, 100)
+      setLoggedTrips(updated)
+      localStorage.setItem(LOGGED_TRIPS_KEY, JSON.stringify(updated))
+    } catch (err) {
+      console.warn('could not persist logged trip', err)
+    }
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -171,7 +218,15 @@ function App() {
   }
 
   function handleClearRoute() {
-    setRouteForm({ title: '', distance_km: '', avg_speed_kmh: '', notes: '' })
+    setRouteForm({
+      title: '',
+      location: '',
+      distance_km: '',
+      avg_speed_kmh: '',
+      duration: '',
+      tag: '',
+      notes: '',
+    })
     setPhoto(null)
     setPhotoPreview(null)
   }
@@ -223,10 +278,30 @@ function App() {
 
       const res = await fetchWithAuth('/api/routes', { method: 'POST', body: formData })
       if (!res.ok) throw new Error('submit failed')
+      persistLoggedTrip({
+        id: Date.now(),
+        title: routeForm.title,
+        location: routeForm.location || 'Logged route',
+        distance_km: routeForm.distance_km,
+        avg_speed_kmh: routeForm.avg_speed_kmh,
+        duration: routeForm.duration,
+        tag: routeForm.tag,
+        notes: routeForm.notes,
+      })
       alert('Route posted')
       handleClearRoute()
     } catch (err) {
       console.error('post failed, saving locally', err)
+      persistLoggedTrip({
+        id: Date.now(),
+        title: routeForm.title,
+        location: routeForm.location || 'Local log',
+        distance_km: routeForm.distance_km,
+        avg_speed_kmh: routeForm.avg_speed_kmh,
+        duration: routeForm.duration,
+        tag: routeForm.tag,
+        notes: routeForm.notes,
+      })
       if (photo) {
         try {
           const dataUrl = await readFileAsDataURL(photo)
@@ -331,6 +406,8 @@ function App() {
           log your routes and share your experiences with the StrAgy community.
         </p>
       </section>
+
+      <Discover loggedTrips={loggedTrips} />
     </div>
   )
 }
