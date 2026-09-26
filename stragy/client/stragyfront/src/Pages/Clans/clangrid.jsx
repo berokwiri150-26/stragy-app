@@ -1,7 +1,7 @@
-const ClubGrid = ({ clubs }) => (
-  <section className='club-grid'>
-    {Array.isArray(clubs) && clubs.length ? clubs.map((club) => <div key={club.id}>{club.name}</div>) : <p>No clubs yet.</p>}
+const ClanGrid = ({ clans }) => (
+  <section className='clan-grid'>
+    {Array.isArray(clans) && clans.length ? clans.map((clan) => <div key={clan.id}>{clan.name}</div>) : <p>No clans yet.</p>}
   </section>
 );
 
-export default ClubGrid;
+export default ClanGrid;
