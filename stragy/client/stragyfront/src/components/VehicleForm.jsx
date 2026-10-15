@@ -69,3 +69,4 @@ export default function VehicleForm({ vehicleForm, onFieldChange, onSubmit, onCl
     </form>
   )
 }
+
