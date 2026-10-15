@@ -12,3 +12,4 @@ export default function VehicleItem({ vehicle, selected, onSelect }) {
     </div>
   )
 }
+
