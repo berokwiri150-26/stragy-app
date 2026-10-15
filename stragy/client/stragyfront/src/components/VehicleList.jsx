@@ -29,3 +29,4 @@ export default function VehicleList({ vehicles, selectedVehicleId, query, onSele
     </section>
   )
 }
+
