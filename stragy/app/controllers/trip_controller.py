@@ -2,7 +2,7 @@ from datetime import datetime
 
 from app.models.route_note import RouteNote
 from app.models.trip import Trip
-from server.extensions import db
+from stragy.app.server.extensions import db
 
 
 def _parse_float(value):
