@@ -1,5 +1,5 @@
 from app.models.user_driving_statistics import UserDrivingStatistics
-from server.extensions import db
+from stragy.app.server.extensions import db
 
 
 def list_driving_stats():
