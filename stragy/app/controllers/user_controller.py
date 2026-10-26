@@ -1,5 +1,5 @@
 from app.models.user import User
-from server.extensions import db
+from stragy.app.server.extensions import db
 
 
 def create_user(data):
