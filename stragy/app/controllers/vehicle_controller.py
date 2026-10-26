@@ -1,5 +1,5 @@
 from app.models.vehicle import Vehicle
-from server.extensions import db
+from stragy.app.server.extensions import db
 
 
 def _parse_int(value):
