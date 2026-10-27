@@ -1,6 +1,8 @@
 from datetime import datetime
 
-from server.extensions import db
+from stragy.app.server.extensions import db
+from dataclasses import dataclass, field
+from typing import Optional, List
 
 
 class Trip(db.Model):
@@ -38,3 +40,17 @@ class Trip(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "notes": [note.to_dict() for note in self.notes],
         }
+
+
+    @dataclass
+    class TripOwner:
+        id: int
+        name: str
+        email: str
+
+
+    @dataclass
+    class TripSummary:
+        title: Optional[str]
+        year: Optional[str]
+        poster_url: Optional[str]
