@@ -54,3 +54,15 @@ class Trip(db.Model):
         title: Optional[str]
         year: Optional[str]
         poster_url: Optional[str]
+
+    @dataclass
+    class TripDetail:
+        title: Optional[str]
+        distance: Optional[float]
+        location: Optional[str]
+        owner: Optional[str]
+        vehicle: Optional[str]
+        tyre_compound: Optional[str]
+        road_terrain: Optional[str]
+        backdrop_url: Optional[str]
+        overview: Optional[str]
