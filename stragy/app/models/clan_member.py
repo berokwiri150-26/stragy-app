@@ -3,6 +3,9 @@ from app.utils import utcnow
 
 class ClanMember(db.Model):
     __tablename__ = 'clan_members'
+    __table_args__ = (
+        db.UniqueConstraint('clan_id', 'user_id', name='unique_clan_user'),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     clan_id = db.Column(db.Integer, db.ForeignKey('clans.id'), nullable=False)
