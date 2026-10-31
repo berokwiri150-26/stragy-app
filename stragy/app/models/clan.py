@@ -1,4 +1,4 @@
-from app.extensions import db
+from stragy.app.server.extensions import db
 from app.utils.time import utcnow
 
 
@@ -28,13 +28,13 @@ members = db.relationship(
 posts = db.relationship(
     "Post", backref= "club", passive_deletes=True, cascade="all, delete-orphan"
 )
+
 messages = db.relationship(
-    "ClanMessage"
+    "ClanMessage",
     backref="clan",
     passive_deletes=True,
-    cascade="all, delete-orphan"
+    cascade="all, delete-orphan",
 )
-
 founder = db.relationship("User", foreign_keys=[created_by])
 # ???
 
