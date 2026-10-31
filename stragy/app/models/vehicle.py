@@ -1,4 +1,5 @@
-from server.extensions import db
+from stragy.app.server.extensions import db
+
 
 
 class Vehicle(db.Model):
@@ -14,7 +15,10 @@ class Vehicle(db.Model):
     tyre_size = db.Column(db.String(50), nullable=True)
     load_capacity = db.Column(db.String(50), nullable=True)
 
+    # Relationships
     user = db.relationship("User", back_populates="vehicles")
+    post = db.relationship("Post", back_populates="vehicle", lazy="select")
+    clan = db.relationship("Clan", back_populates="vehicle", uselist=False)
     trips = db.relationship("Trip", back_populates="vehicle", lazy="select")
     personal_records = db.relationship(
         "PersonalRecord", back_populates="vehicle", lazy="select"
