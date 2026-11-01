@@ -1,16 +1,22 @@
 from datetime import datetime
 
-from server.extensions import db
+from stragy.app.server.extensions import db
 
 
 class User(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, index=True, nullable=False)
+    email = db.Column(db.String(120), index=True, unique=True, nullable=False)
+    is_superuser = db.Column(db.Boolean(120), nullable=False, default=False)
+    is_banned = db.Column(db.Boolean(120), nullable=False, default=False)
+    bio = db.Column(db.String(255), nullable=True)
     password_hash = db.Column(db.String(128), nullable=False)
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
+
+# relationships
     vehicles = db.relationship("Vehicle", back_populates="user", lazy="select")
     personal_records = db.relationship(
         "PersonalRecord", back_populates="user", lazy="select"
@@ -21,6 +27,8 @@ class User(db.Model):
         uselist=False,
         lazy="select",
     )
+
+    
 
     def to_dict(self):
         return {
