@@ -28,7 +28,21 @@ class User(db.Model):
         lazy="select",
     )
 
-    
+    clan_memberships = db.relationship(
+        "ClanMember",
+        backref="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True, 
+    )
+
+    clan_messages = db.relationship(
+        "ClanMessages",
+        backref = "user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+
 
     def to_dict(self):
         return {
