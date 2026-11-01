@@ -36,10 +36,25 @@ class User(db.Model):
     )
 
     clan_messages = db.relationship(
-        "ClanMessages",
+        "ClanMessage",
         backref = "user",
         cascade="all, delete-orphan",
         passive_deletes=True,
+    )
+
+    posts = db.relationship(
+        "Post",
+        backref="author",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    trip = db.relationship(
+     "Trip",
+     backref="user",
+    cascade="all, delete-orphan",
+    passive_deletes=True,
+
     )
 
 
