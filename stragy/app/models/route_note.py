@@ -1,11 +1,12 @@
 from datetime import datetime
+from stragy.app.server.extensions import db
 
-from server.extensions import db
+from stragy.app.server.extensions import db
 
 
 class RouteNote(db.Model):
     __tablename__ = "route_notes"
-
+    
     id = db.Column(db.Integer, primary_key=True)
     trip_id = db.Column(db.Integer, db.ForeignKey("trips.id"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)

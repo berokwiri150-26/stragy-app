@@ -1,6 +1,9 @@
 from datetime import datetime
+# from app.extensions import db
 
-from server.extensions import db
+from stragy.app.server.extensions import db
+from app.utils.time import utcnow
+
 
 
 class PersonalRecord(db.Model):
@@ -13,7 +16,7 @@ class PersonalRecord(db.Model):
     record_type = db.Column(db.String(80), nullable=False)
     value = db.Column(db.Float, nullable=False)
     unit = db.Column(db.String(30), nullable=True)
-    date_achieved = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_achieved = db.Column(db.DateTime, default=utcnow, nullable=False,)
 
     user = db.relationship("User", back_populates="personal_records")
     vehicle = db.relationship("Vehicle", back_populates="personal_records")
@@ -29,3 +32,5 @@ class PersonalRecord(db.Model):
             "unit": self.unit,
             "date_achieved": self.date_achieved.isoformat() if self.date_achieved else None,
         }
+
+    

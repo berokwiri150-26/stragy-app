@@ -1,4 +1,4 @@
-from server.extensions import db
+from stragy.app.server.extensions import db
 
 
 class UserDrivingStatistics(db.Model):

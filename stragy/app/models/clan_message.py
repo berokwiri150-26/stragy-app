@@ -1,4 +1,4 @@
-from app.extensions import db
+from stragy.app.server.extensions import db
 from app.utils.time import utcnow
 
 class ClanMessage(db.Model):

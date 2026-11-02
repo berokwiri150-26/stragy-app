@@ -1,4 +1,4 @@
-from app.extensions import db
+from stragy.app.server.extensions import db
 from app.utils import utcnow
 
 class ClanMember(db.Model):
@@ -12,6 +12,7 @@ class ClanMember(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     role = db.Column(db.String(50), nullable=False, default='member')
     joined_at = db.Column(db.DateTime, default=utcnow)
+    # joined at may need a nullable false constraint if we want to ensure that every member has a join date.
 
     clan = db.relationship('Clan', back_populates='members')
     user = db.relationship('User', back_populates='clan_memberships')

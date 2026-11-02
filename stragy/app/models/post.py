@@ -1,4 +1,4 @@
-from app.extensions import db
+from stragy.app.server.extensions import db
 from app.utils.time import utcnow
 
 class Post(db.Model):
@@ -18,9 +18,9 @@ class Post(db.Model):
     # database id required to fill this, e,g: tvdb_id = db.Column(db.Integer, nullable=True)
 
     # relationships
-    comments = db.relationship(
-        "Comment", backref="post", passive_deletes= True, cascade="all, delete-orphan"
-    )
+    # comments = db.relationship(
+    #     "Comment", backref="post", passive_deletes= True, cascade="all, delete-orphan"
+    # )
 
     def __repr__(self):
         return f"<Post {self.movie_title!r}by user={self.user_id}>"

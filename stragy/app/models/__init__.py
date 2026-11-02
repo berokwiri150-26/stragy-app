@@ -1,6 +1,6 @@
-from server.extensions import db
+# from stragy.app.server.extensions import db
 
-from app.models.user import User
+from app.models_user import User
 from app.models.vehicle import Vehicle
 from app.models.trip import Trip
 from app.models.personal_record import PersonalRecord
