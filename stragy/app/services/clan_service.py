@@ -77,10 +77,10 @@ def update_member_role(clan, current_user_id, target_user_id, new_role):
     if membership is None:
         raise APIError("That user is not a mamber of this clan", 404)
 
-    if memberhsip.role == ADMIN_ROLE and new_role ==MEMBER_ROLE and _admin_count(clan.id) <= 1:
+    if membership.role == ADMIN_ROLE and new_role == MEMBER_ROLE and _admin_count(clan.id) <= 1:
         raise APIError("The last admin cannot be demoted", 400)
 
-    memberhsip.role = new_role
+    membership.role = new_role
     db.session.commit()
     return membership
 
