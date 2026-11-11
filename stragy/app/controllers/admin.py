@@ -37,7 +37,7 @@ from app.models import (
     User,
     Vehicle,
 )
-from stragy.app.server.extensions import db
+from app.server.extensions import db
 
 
 admin_bp = Blueprint("admin", __name__)

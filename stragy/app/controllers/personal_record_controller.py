@@ -1,5 +1,5 @@
 from app.models.personal_record import PersonalRecord
-from stragy.app.server.extensions import db
+from app.server.extensions import db
 
 
 def create_personal_record(data):
