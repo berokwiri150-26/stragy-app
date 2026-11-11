@@ -8,9 +8,9 @@ instances (or raises APIError), with no knowledge of Flask.
 from unicodedata import name
 # For the name function to not be red. Need to identify what import is missing.
 
-from stragy.app.server.extensions import db
-from stragy.app.server.models import Clan, ClanMember
-from stragy.app.utils import APIError
+from app.server.extensions import db
+from app.models import Clan, ClanMember
+from app.utils import APIError
 
 def create_clan(creator, vehicle_make, desctiption=None, background_url=None):
     clan = Clan(
@@ -59,11 +59,11 @@ def leave_clan(clan, user):
     if membership is None:
         raise APIError  ("Not a member of this club", 404)
 
-    if membership.role == ADMIN_ROLE and _admin_count(clan.id)<=1:
+    if membership.role == ADMIN_ROLE and _admin_count(clan.id) <= 1:
         raise APIError("The last admin cannot leave the club", 400)
 
-db.session.delete(membership)
-db.session.commit()
+    db.session.delete(membership)
+    db.session.commit()
 
 
 def update_member_role(clan, current_user_id, target_user_id, new_role):
