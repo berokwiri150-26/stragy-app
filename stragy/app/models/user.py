@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from stragy.app.server.extensions import db
+from app.server.extensions import db
 
 
 class User(db.Model):
@@ -48,16 +48,6 @@ class User(db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-
-    trip = db.relationship(
-     "Trip",
-     backref="user",
-    cascade="all, delete-orphan",
-    passive_deletes=True,
-
-    )
-
-
 
     def to_dict(self):
         return {

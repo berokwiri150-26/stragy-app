@@ -1,7 +1,5 @@
 from datetime import datetime
-from stragy.app.server.extensions import db
-
-from stragy.app.server.extensions import db
+from app.server.extensions import db
 
 
 class RouteNote(db.Model):

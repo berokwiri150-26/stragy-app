@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from stragy.app.server.extensions import db
+from app.server.extensions import db
 from dataclasses import dataclass, field
 from typing import Optional, List
 

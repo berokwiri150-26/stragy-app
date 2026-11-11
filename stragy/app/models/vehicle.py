@@ -1,4 +1,4 @@
-from stragy.app.server.extensions import db
+from app.server.extensions import db
 
 
 
@@ -17,7 +17,6 @@ class Vehicle(db.Model):
 
     # Relationships
     user = db.relationship("User", back_populates="vehicles")
-    post = db.relationship("Post", back_populates="vehicle", lazy="select")
     clan = db.relationship("Clan", back_populates="vehicle", uselist=False)
     trips = db.relationship("Trip", back_populates="vehicle", lazy="select")
     personal_records = db.relationship(
