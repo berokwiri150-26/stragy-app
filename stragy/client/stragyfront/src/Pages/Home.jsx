@@ -8,5 +8,9 @@ import {getClans, getPublicClans} from "../services/clanService";
 
 const Home () => {
     const [trending, setTrending] = useState([]);
-    const [myClans, setMyClans] = useState([]) 
+    const [myClans, setMyClans] = useState([]);
+    const [recentPosts, setRecentPosts] = useState([]);
+    const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
+    const [loading, setLoading] = useState (true);
+    const {user} = useAuth();
 }
