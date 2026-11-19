@@ -21,7 +21,7 @@ useEffect(() => {
     const clanrequest = user ? getClans(1,50) : getPublicClans(1,6);
     const feedRequest = user ? (1,4) : Promise.resolve(null);
 
-    Promise.allSettled([getTrendingMovies(), clanRequest, feedRequest]).then (([trendingRes, clubsRes, feedRes]) => {
+    Promise.allSettled([getTrendingTrips(), clanRequest, feedRequest]).then (([trendingRes, clubsRes, feedRes]) => {
         if (!active) return;
 
         if (trendingRes.status === "fulfilled") {
