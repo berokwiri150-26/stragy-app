@@ -23,5 +23,14 @@ useEffect(() => {
 
     Promise.allSettled([getTrendingMovies(), clanRequest, feedRequest]).then (([trendingRes, clubsRes, feedRes]) => {
         if (!active) return;
+
+        if (trendingRes.status === "fulfilled") {
+            setTrending(trendingRes.value.data?.items || []);
+        }
+
+        if (clansRes.status === "fulfilled") {
+            const allClans = clansRes.value.data?.items || clansRes.value.data || [];
+            setMyClans(user ? allClans.filter((c) => c.is_member) : allClans);
+        }
     })
 })
