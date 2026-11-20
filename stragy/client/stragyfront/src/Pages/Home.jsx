@@ -13,7 +13,7 @@ const Home = () => {
     const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
     const [loading, setLoading] = useState (true);
     const {user} = useAuth();
-}
+
 
 useEffect(() => {
     let active = true;
@@ -56,3 +56,4 @@ useEffect(() => {
   const heroCandidates = trending.slice(0, 3);
   const featured = heroCandidates[currentFeaturedIndex];
 
+};
